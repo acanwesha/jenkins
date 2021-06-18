@@ -1,0 +1,173 @@
+openapi: 3.0.1
+info:
+  title: Result Copy Reactor Web Server.
+  description: This server contains services like getting the patient details, child details, category details of result, copy the results from mother to the child.
+  version: 1.0.0
+paths:
+  /patient-results/{patientId}:
+    get:
+      description: Returns the patient details, child details, categories and result details by Patient identifier.
+      tags:
+        - "Patient Result"
+      parameters:
+        - name: patientId
+          description: A unique identifier of patient to fetch the patient details having the same identifier provided in the path url.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved patient, child and result details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientResult'
+        '404':
+          description: A Patient with the specified Id was not found.
+        '400':
+          description: Bad request patientId must be a positive value.
+  /copy-results:
+    post:
+      description: Copies the documented result from mother patient to baby.
+      tags:
+        - "Copy Result"
+      requestBody:
+        description: Baby result information that needs to be saved for a particular baby.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BabyResult'
+      responses:
+        '201':
+          description: Baby result copied.
+        '400':
+          description: Bad Request.
+        '401':
+          description: Unauthorized.
+components:
+  schemas:
+    PatientResult:
+      description: Displays the patient details, child details, categories and result related to patient.
+      required:
+        - patient
+        - child
+        - category
+      properties:
+        patient:
+          type: array
+          description: Information about the patient.
+          items:
+            $ref: '#/components/schemas/Patient'
+        child:
+          type: array
+          description: Information about the child.
+          items:
+            $ref: '#/components/schemas/Child'
+        category:
+          type: array
+          description: List of categories available as a part of patient reports.
+          items:
+            $ref: '#/components/schemas/Category'
+        isResultCopied:
+          type: boolean
+          description: A boolean value that returns true/false based on whether the patient result is copied to baby result previously.
+          example: true
+        resultCopiedDateTime:
+          type: string
+          description: Date time when the result was copied from mother to baby in ISO format,"YYYY-MM-DDTHH:MM:SSZ".
+          example: '2011-10-05T14:48:00.000Z'
+    Category:
+      description: List of categories available as a part of patient reports.
+      properties:
+        id:
+          type: integer
+          description: Identifier for category.
+          format: int32
+          example: 20
+        displayName:
+          type: string
+          description: Name of the category.
+          example: DELIVERY_INFORMATION
+        result:
+          type: array
+          description: List of result details documented for the mother patient.
+          items:
+            $ref: '#/components/schemas/Result'
+    Result:
+      description: List of result details documented for the mother patient.
+      properties:
+        id:
+          type: integer
+          description: Identifier for result.
+          format: int32
+          example: 20
+        displayName:
+          type: string
+          description: The result name for a particular category.
+          example: PREGNANCY_OUTCOME
+        value:
+          type: string
+          description: The value associated with the result for the patient.
+          example: VAGINAL_BIRTH
+    Patient:
+      description: Information about the patient.
+      properties:
+        patientDetails: 
+          type: array
+          description: Information about the patient.
+          items:
+            $ref: '#/components/schemas/PatientDetails'
+    Child:
+      description: Information about the child.
+      properties:
+         childDetails: 
+          type: array
+          description: Information of the child.
+          items:
+            $ref: '#/components/schemas/PatientDetails'
+    BabyResult:
+      description: Baby result information that is to be copied and be linked to the baby.
+      properties:
+        childId:
+          type: integer
+          format: int32
+          description: Identifier for a child.
+          example: 35
+        categoryName:
+          type: string
+          description: Name of the category.
+          example: DELIVERY_INFORMATION
+        resultName:
+          type: string
+          description: The result name for a particular category.
+          example: PREGNANCY_OUTCOME
+        value:
+          type: string
+          description: The value associated with the result for the patient.
+          example: VAGINAL_BIRTH
+    PatientDetails:
+      description: Demographic information.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Identifier of a patient.
+          example: 35
+        firstName:
+          description: This is the first name of a patient.
+          type: string
+          example: JOEE
+        lastName:
+          description: This is the last name of a patient.
+          type: string
+          example: ROBERTS
+        mrn:
+          description: This is the mrn allocated for the patient.
+          type: string
+          example: MX134566
+        fin:
+          description: This is the fin allocated for the patient.
+          type: string
+          example: MH134566
